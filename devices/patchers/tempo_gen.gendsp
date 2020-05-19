@@ -1,0 +1,553 @@
+{
+	"patcher" : 	{
+		"fileversion" : 1,
+		"appversion" : 		{
+			"major" : 8,
+			"minor" : 1,
+			"revision" : 3,
+			"architecture" : "x64",
+			"modernui" : 1
+		}
+,
+		"classnamespace" : "dsp.gen",
+		"rect" : [ -1492.0, 141.0, 1527.0, 819.0 ],
+		"bglocked" : 0,
+		"openinpresentation" : 0,
+		"default_fontsize" : 12.0,
+		"default_fontface" : 0,
+		"default_fontname" : "Arial",
+		"gridonopen" : 1,
+		"gridsize" : [ 15.0, 15.0 ],
+		"gridsnaponopen" : 1,
+		"objectsnaponopen" : 1,
+		"statusbarvisible" : 2,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 0,
+		"toptoolbarpinned" : 0,
+		"righttoolbarpinned" : 0,
+		"bottomtoolbarpinned" : 0,
+		"toolbars_unpinned_last_save" : 0,
+		"tallnewobj" : 0,
+		"boxanimatetime" : 200,
+		"enablehscroll" : 1,
+		"enablevscroll" : 1,
+		"devicewidth" : 0.0,
+		"description" : "",
+		"digest" : "",
+		"tags" : "",
+		"style" : "",
+		"subpatcher_template" : "",
+		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-10",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 940.125, 0.0, 35.0, 22.0 ],
+					"text" : "in 24"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-9",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 899.25, 0.0, 35.0, 22.0 ],
+					"text" : "in 23"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-7",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 858.375, 0.0, 35.0, 22.0 ],
+					"text" : "in 22"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-6",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 817.5, 0.0, 35.0, 22.0 ],
+					"text" : "in 21"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-3",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 776.625, 0.0, 35.0, 22.0 ],
+					"text" : "in 20"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"code" : "/**\r\n* tempo_gen calculates the tempo that live should be set to at a given tick point within a sequence based on input parameters.\r\n* @author Adrian Anders\r\n* @version 1.0\r\n* @since 2020-05-17\r\n**/\r\n\r\n// calculates output value\r\ncalc_output_value(current, next, substep, songpos_quant, tempo_center, random_amount, \r\n                  random_quantization, seq_quantization, seq_speed_multiplier) {\r\n\trandom = calc_quant_random(random_amount, songpos_quant, random_quantization, seq_speed_multiplier);\r\n\tseq_value = calc_quant_substep_value(current, next, substep, songpos_quant, seq_quantization, seq_speed_multiplier);\r\n\toutput = tempo_center + seq_value + random;\r\n\tif (output < 20.0) {\r\n\t\toutput = 20.0;\r\n\t} else if (output > 999.0) {\r\n\t\toutput = 999.0;\r\n\t}\r\n\treturn output;\r\n}\r\n\r\n// calculates substep value\r\ncalc_substep_value(current, next, substep) {\r\n\treturn current + ((next - current) * substep);\r\n}\r\n\r\n// calculates random\r\ncalc_random(random_amount) {\r\n\treturn random_amount * noise();\r\n}\r\n\r\n// calculates quantization\r\ncalc_quant(songpos, quantization, seq_speed_multiplier) {\r\n\tlower = 96.0;\r\n\tupper = 1.0;\r\n\tspeed_lower = scale(lower, lower, upper, lower, upper * seq_speed_multiplier);\r\n\tspeed_upper = scale(upper, lower, upper, lower, upper * seq_speed_multiplier);\r\n\tquantization_ratio = scale(quantization, 0.0, 100.0, speed_lower, speed_upper);\r\n\tquantized_songpos = round((songpos * quantization_ratio), 2) / quantization_ratio;\r\n\treturn quantized_songpos;\r\n}\r\n\r\n\r\n// quantizes randomization based on % amount supplied. Uses history to reference prior values.\r\ncalc_quant_random(random_amount, songpos_quant, random_quantization, seq_speed_multiplier) {\r\n\tHistory rand_history(0.0);\r\n\tHistory rand_quant_history(-1.0);\r\n\tsongpos_random_quant = calc_quant(songpos_quant, random_quantization, seq_speed_multiplier);\r\n\trandom = songpos_random_quant;\r\n\trandom = calc_random(random_amount);\r\n\trand_quant_delta = rand_quant_history - songpos_random_quant;\r\n\tif (rand_quant_history != songpos_random_quant) {\r\n\t\trand_history = random;\r\n\t\trand_quant_history = songpos_random_quant;\r\n\t} else {\r\n\t\trandom = rand_history;\r\n\t}\r\n\treturn random;\r\n}\r\n\r\n// quantizes sequencer substep interpolation based on % amount supplied. Uses history to reference prior values.\r\ncalc_quant_substep_value(current, next, substep, songpos_quant, seq_quantization, seq_speed_multiplier) {\r\n\tHistory seq_history(0.0);\r\n\tHistory seq_quant_history(-1.0);\r\n\tsongpos_seq_quant = calc_quant(songpos_quant, seq_quantization, seq_speed_multiplier);\r\n\tseq_value = calc_substep_value(current, next, substep);\r\n\tif (seq_quant_history != songpos_seq_quant) {\r\n\t\tseq_history = seq_value;\r\n\t\tseq_quant_history = songpos_seq_quant;\r\n\t} else {\r\n\t\tseq_value = seq_history;\r\n\t}\r\n\treturn seq_value;\r\n}\r\n\r\n\r\n// input variables\r\n\r\n// song position in quantized 96 ppq ticks. Acts as the gen trigger.\r\nsongpos_quant = in1;\r\n\r\n// song position in full floating point ticks.\r\nsongpos = in2;\r\n\r\n// center point for the tempo fluxations.\r\ntempo_center = in3;\r\n\r\n// amount of random tempo changes.\r\nrandom_amount = in4;\r\n\r\n// amount of quantization to the full sequencer beat random tempo applies (0 = sub-tick random. 1 = seq step random)\r\nrandom_quantization = in5;\r\n\r\n// speed multiplier based on divisions of 0.125, 0.25, 0.5, 1, 2, 4, 8\r\nseq_speed_multiplier = in6;\r\n\r\n// amount of quantization to the full sequencer beat the interpolated tempo change applies  \r\n// (0 = full interpolation at subtick rate. 1 = no interpolation, tempo set on step change).\r\nseq_quantization = in7;\r\n\r\n// enables/disables output.\r\nenabled = in8;\r\n\r\n// step inputs\r\nstep_1 = in9;\r\nstep_2 = in10;\r\nstep_3 = in11;\r\nstep_4 = in12;\r\nstep_5 = in13;\r\nstep_6 = in14;\r\nstep_7 = in15;\r\nstep_8 = in16;\r\nstep_9 = in17;\r\nstep_10 = in18;\r\nstep_11 = in19;\r\nstep_12 = in20;\r\nstep_13 = in21;\r\nstep_14 = in22;\r\nstep_15 = in23;\r\nstep_16 = in24;\r\n\r\n\r\n// scales song position by \"Sequencer Speed\" which is not a free-running value, but rather set by a multiplier.\nscaled_songpos = songpos * seq_speed_multiplier;\r\n\r\n// sets the step position based on a 16-step sequence. Note behavior may be unexpected with non 4/4 songs.\nstep_pos = scaled_songpos % 16;\r\n\r\n// floors to set the whole number value. 0-based.\nstep_pos_whole = floor(step_pos);\r\n\r\n// create the \"sub-step\" percentile for interpolation between steps.\nsub_step = step_pos - step_pos_whole;\r\n\r\n// adds one to create the 1-based version of the step which is used as step output.\r\nstep_pos_one = step_pos_whole + 1;\nout2 = step_pos_one;\r\n\r\n\r\nif (enabled != 0) {\r\n\tcalc_output = 0.0;\r\n\tif (step_pos_whole == 0) {\r\n\t\tcalc_output = calc_output_value(step_1, step_2, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 1) {\r\n\t\tcalc_output = calc_output_value(step_2, step_3, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 2) {\r\n\t\tcalc_output = calc_output_value(step_3, step_4, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 3) {\r\n\t\tcalc_output = calc_output_value(step_4, step_5, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 4) {\r\n\t\tcalc_output = calc_output_value(step_5, step_6, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 5) {\r\n\t\tcalc_output = calc_output_value(step_6, step_7, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 6) {\r\n\t\tcalc_output = calc_output_value(step_7, step_8, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 7) {\r\n\t\tcalc_output = calc_output_value(step_8, step_9, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 8) {\r\n\t\tcalc_output = calc_output_value(step_9, step_10, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 9) {\r\n\t\tcalc_output = calc_output_value(step_10, step_11, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 10) {\r\n\t\tcalc_output = calc_output_value(step_11, step_12, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 11) {\r\n\t\tcalc_output = calc_output_value(step_12, step_13, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 12) {\r\n\t\tcalc_output = calc_output_value(step_13, step_14, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 13) {\r\n\t\tcalc_output = calc_output_value(step_14, step_15, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else if (step_pos_whole == 14) {\r\n\t\tcalc_output = calc_output_value(step_15, step_16, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t} else {\r\n\t\tcalc_output = calc_output_value(step_16, step_1, sub_step, songpos_quant, tempo_center, random_amount, \r\n                                        random_quantization, seq_quantization, seq_speed_multiplier);\r\n\t}\r\n\tout1 = calc_output;\r\n}\r\n\r\n",
+					"fontface" : 0,
+					"fontname" : "<Monospaced>",
+					"fontsize" : 12.0,
+					"id" : "obj-34",
+					"maxclass" : "codebox",
+					"numinlets" : 24,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
+					"patching_rect" : [ 0.0, 46.0, 959.125000000000114, 808.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 0.0, 54.0, 2000.0, 800.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-33",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 735.75, 0.0, 35.0, 22.0 ],
+					"text" : "in 19"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-32",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 694.875, 0.0, 35.0, 22.0 ],
+					"text" : "in 18"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-31",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 654.0, 0.0, 35.0, 22.0 ],
+					"text" : "in 17"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-30",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 613.125, 0.0, 35.0, 22.0 ],
+					"text" : "in 16"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-29",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 572.25, 0.0, 35.0, 22.0 ],
+					"text" : "in 15"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-28",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 531.375, 0.0, 35.0, 22.0 ],
+					"text" : "in 14"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-27",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 490.5, 0.0, 35.0, 22.0 ],
+					"text" : "in 13"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-26",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 449.625, 0.0, 35.0, 22.0 ],
+					"text" : "in 12"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-25",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 408.75, 0.0, 34.0, 22.0 ],
+					"text" : "in 11"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-24",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 367.875, 0.0, 35.0, 22.0 ],
+					"text" : "in 10"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-23",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 327.0, 0.0, 28.0, 22.0 ],
+					"text" : "in 9"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-22",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 286.125, 0.0, 28.0, 22.0 ],
+					"text" : "in 8"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-21",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 245.25, 0.0, 28.0, 22.0 ],
+					"text" : "in 7"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-20",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 204.375, 0.0, 28.0, 22.0 ],
+					"text" : "in 6"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-19",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 163.5, 0.0, 28.0, 22.0 ],
+					"text" : "in 5"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-18",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 122.625, 0.0, 28.0, 22.0 ],
+					"text" : "in 4"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-8",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 81.75, 0.0, 28.0, 22.0 ],
+					"text" : "in 3"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-5",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 0.125000000000114, 899.0, 35.0, 22.0 ],
+					"text" : "out 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-1",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 0.0, 0.0, 28.0, 22.0 ],
+					"text" : "in 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-2",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 40.875, 0.0, 28.0, 22.0 ],
+					"text" : "in 2"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-4",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 946.0, 890.0, 35.0, 22.0 ],
+					"text" : "out 2"
+				}
+
+			}
+ ],
+		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 0 ],
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 23 ],
+					"source" : [ "obj-10", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 3 ],
+					"source" : [ "obj-18", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 4 ],
+					"source" : [ "obj-19", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 1 ],
+					"source" : [ "obj-2", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 5 ],
+					"source" : [ "obj-20", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 6 ],
+					"source" : [ "obj-21", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 7 ],
+					"source" : [ "obj-22", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 8 ],
+					"source" : [ "obj-23", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 9 ],
+					"source" : [ "obj-24", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 10 ],
+					"source" : [ "obj-25", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 11 ],
+					"source" : [ "obj-26", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 12 ],
+					"source" : [ "obj-27", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 13 ],
+					"source" : [ "obj-28", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 14 ],
+					"source" : [ "obj-29", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 19 ],
+					"source" : [ "obj-3", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 15 ],
+					"source" : [ "obj-30", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 16 ],
+					"source" : [ "obj-31", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 17 ],
+					"source" : [ "obj-32", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 18 ],
+					"source" : [ "obj-33", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-4", 0 ],
+					"source" : [ "obj-34", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-5", 0 ],
+					"source" : [ "obj-34", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 20 ],
+					"source" : [ "obj-6", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 21 ],
+					"source" : [ "obj-7", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 2 ],
+					"source" : [ "obj-8", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-34", 22 ],
+					"source" : [ "obj-9", 0 ]
+				}
+
+			}
+ ]
+	}
+
+}
