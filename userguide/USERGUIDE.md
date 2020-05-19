@@ -1,6 +1,6 @@
 <h1>User Guide</h1>
 
-Inspired by tempo automation patterns found in IDM productions, Aukward is a 16-step tempo automation sequencer for Ableton Live with Max For Live. It is a "MIDI Effect" which does not produce any output, not even pass through. It is intended to be placed on its own MIDI lane seperate from instrument tracks. Aukward based on sequencer position sends tempo automation data to Live based on either interpolated sequenced values or random noise. Sequencer is not free-running, dependent upon Live's internal sequencer position for position in the step sequence. For performance reasons frequency of tempo update signals are set to a maximum of 96ppq (pulse per quarter note) which can be further quantized with "Quant" parameter values up to a full sequencer beat. Product has been tested with internal Ableton Live devices, but may experience unexpected behavior with software or extrenal devices which rely on a stable MIDI clock. By its nature, the fast ramping of tempo in Aukward may distrupt timing in unexpected (and interesting) ways. Feel free to reach out to share your experiences with syncing tools to Live being manipulated by Aukward as well as any other feedback.
+Inspired by tempo automation patterns found in IDM productions, Aukward is a 16-step tempo automation sequencer for Ableton Live with Max For Live. It is a "MIDI Effect" which does not produce any output, not even pass through. It is intended to be placed on its own MIDI lane separate from instrument tracks. Aukward based on sequencer position sends tempo automation data to Live based on either interpolated sequenced values or random noise. Sequencer is not free-running, dependent upon Live's internal sequencer position for position in the step sequence. For performance reasons frequency of tempo update signals are set to a maximum of 96ppq (pulse per quarter note) which can be further quantized with "Quant" parameter values up to a full sequencer beat. Product has been tested with internal Ableton Live devices, but may experience unexpected behavior with software or external devices which rely on a stable MIDI clock. By its nature, the fast ramping of tempo in Aukward may disrupt timing in unexpected (and interesting) ways. Feel free to reach out to share your experiences with syncing tools to Live being manipulated by Aukward as well as any other feedback.
 
 <h2>Requirements</h2>
   <ul>Ableton Live 10</ul>
@@ -13,8 +13,8 @@ Drag and drop the patch into an available empty MIDI channel.<br>
 <b>Note</b>: Aukward does not contain MIDI pass through and will block MIDI from reaching instruments in the same MIDI channel.<br>
 Upon playback, Aukward takes over project tempo automation and settings from Live. <br>
 Automation and global tempo "center" should be set from Aukward rather than default Live settings and automation.<br>
-Defaults are set to a fixed 120 BPM with no sequencer adjustments or random BPM fluxuations. <br>
-Change sequncer step values or random amount then press play to see the effect in action.<br>
+Defaults are set to a fixed 120 BPM with no sequencer adjustments or random BPM fluctuations. <br>
+Change sequencer step values or random amount then press play to see the effect in action.<br>
 
 <h2>Parameter Guide</h2>
 
@@ -39,7 +39,7 @@ Range for random BPM value adjustments. From 0.0-999.0 BPM.<br>
 <img src="/img/04-sspeed.png" alt="Sequencer Speed">
 How fast the sequencer moves between steps. 1 is one beat per step.<br>
 Moving to the right from the center increases the speed to sub-step divisions.<br>
-Moving to the left from the center slows the seqence down to multiples of beats per step.<br>
+Moving to the left from the center slows the sequence down to multiples of beats per step.<br>
 
 <h4>Sequencer Quantization</h4>
 <img src="/img/05-squant.png" alt="Sequencer Quantization">
